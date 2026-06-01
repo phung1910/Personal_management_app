@@ -27,46 +27,54 @@ const Layout = () => {
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] mix-blend-overlay"></div>
       </div>
 
-      {/* Floating Top Navigation */}
-      <header className="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-6 px-3 py-2 bg-white/60 backdrop-blur-2xl border border-white/50 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.05)]">
+      {/* Navigation (Left Sidebar on Mobile, Top Bar on Desktop) */}
+      <header className="fixed z-50 flex bg-white/60 backdrop-blur-2xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.05)]
+        max-md:top-1/2 max-md:-translate-y-1/2 max-md:left-4 max-md:flex-col max-md:items-center max-md:py-4 max-md:px-2 max-md:rounded-[2rem] max-md:gap-4
+        md:top-6 md:left-1/2 md:-translate-x-1/2 md:flex-row md:items-center md:px-3 md:py-2 md:rounded-full md:gap-6
+      ">
         {/* Logo */}
-        <div className="flex items-center gap-2 pl-3 pr-2 border-r border-slate-200/50">
-          <Sparkles className="w-5 h-5 text-rose-400" />
-          <span className="text-sm font-bold text-slate-700 tracking-wider uppercase">Perso</span>
+        <div className="flex items-center justify-center gap-2 max-md:pb-3 max-md:border-b md:pl-3 md:pr-2 md:border-r border-slate-200/50">
+          <Sparkles className="w-6 h-6 md:w-5 md:h-5 text-rose-400 shrink-0" />
+          <span className="text-sm font-bold text-slate-700 tracking-wider uppercase max-md:hidden">Perso</span>
         </div>
         
         {/* Nav Links */}
-        <nav className="flex items-center gap-1">
+        <nav className="flex items-center max-md:flex-col md:gap-1 gap-3">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path || (location.pathname.startsWith(item.path) && item.path !== '/');
+            const Icon = item.icon;
             return (
               <Link
                 key={item.name}
                 to={item.path}
-                className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wide transition-all duration-300 ${
-                  isActive
-                    ? 'bg-white text-rose-500 shadow-sm scale-105'
+                title={item.name}
+                className={`flex items-center justify-center transition-all duration-300 
+                  max-md:w-12 max-md:h-12 max-md:rounded-2xl
+                  md:px-4 md:py-2 md:rounded-full md:text-xs md:font-semibold md:tracking-wide
+                  ${isActive
+                    ? 'bg-white text-rose-500 shadow-sm md:scale-105 max-md:scale-110'
                     : 'text-slate-500 hover:text-slate-800 hover:bg-white/50'
                 }`}
               >
-                {item.name}
+                <Icon className="w-6 h-6 md:hidden" />
+                <span className="max-md:hidden">{item.name}</span>
               </Link>
             );
           })}
         </nav>
 
         {/* User & Actions */}
-        <div className="flex items-center gap-3 pl-2 pr-1 border-l border-slate-200/50">
-          <div className="flex bg-slate-100/50 rounded-full p-0.5 border border-white/50">
+        <div className="flex items-center max-md:flex-col max-md:pt-3 max-md:border-t md:pl-2 md:pr-1 md:border-l border-slate-200/50 gap-3">
+          <div className="flex max-md:flex-col bg-slate-100/50 md:rounded-full max-md:rounded-xl p-0.5 border border-white/50 gap-0.5">
             <button
               onClick={() => setLanguage('en')}
-              className={`px-2.5 py-1 text-[10px] font-bold rounded-full transition-all ${language === 'en' ? 'bg-white text-rose-500 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+              className={`flex items-center justify-center max-md:w-8 max-md:h-8 md:px-2.5 md:py-1 text-[10px] font-bold md:rounded-full max-md:rounded-lg transition-all ${language === 'en' ? 'bg-white text-rose-500 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
             >
               EN
             </button>
             <button
               onClick={() => setLanguage('vi')}
-              className={`px-2.5 py-1 text-[10px] font-bold rounded-full transition-all ${language === 'vi' ? 'bg-white text-rose-500 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+              className={`flex items-center justify-center max-md:w-8 max-md:h-8 md:px-2.5 md:py-1 text-[10px] font-bold md:rounded-full max-md:rounded-lg transition-all ${language === 'vi' ? 'bg-white text-rose-500 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
             >
               VI
             </button>
@@ -74,16 +82,18 @@ const Layout = () => {
           
           <button
             onClick={logout}
-            className="flex items-center justify-center w-8 h-8 rounded-full bg-white/50 hover:bg-rose-100 hover:text-rose-500 text-slate-400 transition-all duration-300 border border-transparent hover:border-rose-200 group"
+            className="flex items-center justify-center w-10 h-10 md:w-8 md:h-8 rounded-full bg-white/50 hover:bg-rose-100 hover:text-rose-500 text-slate-400 transition-all duration-300 border border-transparent hover:border-rose-200 group shrink-0"
             title={t('sign_out')}
           >
-            <LogOut className="w-4 h-4 group-hover:scale-110 transition-transform" />
+            <LogOut className="w-4 h-4 md:group-hover:scale-110 transition-transform" />
           </button>
         </div>
       </header>
 
       {/* Main Content Area */}
-      <main className="relative z-10 pt-32 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto min-h-screen">
+      <main className="relative z-10 mx-auto min-h-screen max-w-7xl 
+        max-md:pl-24 max-md:pr-4 max-md:pt-12 max-md:pb-12
+        md:pt-32 md:px-8 md:pb-12">
         <Outlet />
       </main>
 
