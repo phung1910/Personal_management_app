@@ -32,6 +32,7 @@ function Finance() {
     description: '',
     transaction_date: new Date().toISOString().split('T')[0]
   });
+  const [customCategory, setCustomCategory] = useState('');
 
   const adjustAmount = (delta: number) => {
     const current = parseFloat(formData.amount) || 0;
@@ -59,15 +60,21 @@ function Finance() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.category) return;
+    
+    const finalCategory = formData.category === 'Custom' ? customCategory : formData.category;
+    const finalData = { ...formData, category: finalCategory };
+    
     try {
-      await api.post('/finance', formData);
+      await api.post('/finance', finalData);
       setFormData({
-        type: 'expense',
+        type: formData.type, // keep the current type
         amount: '',
         category: '',
         description: '',
         transaction_date: new Date().toISOString().split('T')[0]
       });
+      setCustomCategory('');
       fetchData(); // Refresh all data to update summary and list
     } catch (error) {
       console.error('Error creating transaction:', error);
@@ -200,32 +207,48 @@ function Finance() {
                 </div>
               </div>
 
-              <div>
+              <div className="space-y-3">
                 <label className="block text-sm font-semibold text-gray-700 mb-1">{t('category')} *</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Tag className="h-4 w-4 text-gray-400" />
                   </div>
+                  <select
+                    required
+                    value={formData.category}
+                    onChange={e => setFormData({...formData, category: e.target.value})}
+                    className="block w-full pl-9 border border-gray-300 rounded-xl py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 sm:text-sm appearance-none bg-white"
+                  >
+                    <option value="" disabled>{t('placeholder_category') || 'Chọn danh mục...'}</option>
+                    {formData.type === 'expense' ? (
+                      <>
+                        <option value={t('cat_food') || 'Ăn uống'}>{t('cat_food') || 'Ăn uống'}</option>
+                        <option value={t('cat_transport') || 'Đi lại'}>{t('cat_transport') || 'Đi lại'}</option>
+                        <option value={t('cat_shopping') || 'Mua sắm'}>{t('cat_shopping') || 'Mua sắm'}</option>
+                        <option value={t('cat_housing') || 'Nhà cửa'}>{t('cat_housing') || 'Nhà cửa'}</option>
+                        <option value={t('cat_utilities') || 'Hóa đơn & Tiện ích'}>{t('cat_utilities') || 'Hóa đơn & Tiện ích'}</option>
+                        <option value={t('cat_entertainment') || 'Giải trí'}>{t('cat_entertainment') || 'Giải trí'}</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value={t('cat_salary') || 'Tiền lương'}>{t('cat_salary') || 'Tiền lương'}</option>
+                        <option value={t('cat_investments') || 'Đầu tư'}>{t('cat_investments') || 'Đầu tư'}</option>
+                      </>
+                    )}
+                    <option value="Custom" className="font-bold">+ Tự nhập lý do...</option>
+                  </select>
+                </div>
+                {formData.category === 'Custom' && (
                   <input
                     type="text"
                     required
-                    list="category-suggestions"
-                    value={formData.category}
-                    onChange={e => setFormData({...formData, category: e.target.value})}
-                    className="block w-full pl-9 border border-gray-300 rounded-xl py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 sm:text-sm"
-                    placeholder={t('placeholder_category')}
+                    value={customCategory}
+                    onChange={e => setCustomCategory(e.target.value)}
+                    placeholder="Nhập lý do chi tiêu/thu nhập..."
+                    className="block w-full border border-gray-300 rounded-xl py-2.5 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 sm:text-sm animate-in fade-in slide-in-from-top-2"
+                    autoFocus
                   />
-                  <datalist id="category-suggestions">
-                    <option value={t('cat_food')} />
-                    <option value={t('cat_transport')} />
-                    <option value={t('cat_shopping')} />
-                    <option value={t('cat_housing')} />
-                    <option value={t('cat_utilities')} />
-                    <option value={t('cat_entertainment')} />
-                    <option value={t('cat_salary')} />
-                    <option value={t('cat_investments')} />
-                  </datalist>
-                </div>
+                )}
               </div>
 
               <div>
