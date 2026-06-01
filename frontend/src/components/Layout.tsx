@@ -1,13 +1,14 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { LanguageContext } from '../context/LanguageContext';
-import { LayoutDashboard, CheckSquare, LogOut, Calendar, Timer, Wallet, Sparkles } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, LogOut, Calendar, Timer, Wallet, Sparkles, Menu, X } from 'lucide-react';
 
 const Layout = () => {
   const { user, logout } = useContext(AuthContext);
   const { language, setLanguage, t } = useContext(LanguageContext);
   const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = [
     { name: t('dashboard'), path: '/', icon: LayoutDashboard },
@@ -27,11 +28,20 @@ const Layout = () => {
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] mix-blend-overlay"></div>
       </div>
 
+      {/* Mobile Menu Toggle Button */}
+      <button 
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        className="md:hidden fixed top-4 left-4 z-[60] w-12 h-12 flex items-center justify-center bg-white/70 backdrop-blur-2xl border border-white/50 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.05)] text-slate-700 hover:text-rose-500 hover:bg-white transition-all active:scale-95"
+      >
+        {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+      </button>
+
       {/* Navigation (Left Sidebar on Mobile, Top Bar on Desktop) */}
-      <header className="fixed z-50 flex bg-white/60 backdrop-blur-2xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.05)]
-        max-md:top-1/2 max-md:-translate-y-1/2 max-md:left-4 max-md:flex-col max-md:items-center max-md:py-4 max-md:px-2 max-md:rounded-[2rem] max-md:gap-4
-        md:top-6 md:left-1/2 md:-translate-x-1/2 md:flex-row md:items-center md:px-3 md:py-2 md:rounded-full md:gap-6
-      ">
+      <header className={`fixed z-50 flex bg-white/60 backdrop-blur-2xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.05)] transition-all duration-500
+        max-md:top-1/2 max-md:-translate-y-1/2 max-md:flex-col max-md:items-center max-md:py-4 max-md:px-2 max-md:rounded-[2rem] max-md:gap-4
+        ${isMobileMenuOpen ? 'max-md:left-4 max-md:opacity-100 max-md:visible' : 'max-md:-left-full max-md:opacity-0 max-md:invisible'}
+        md:top-6 md:left-1/2 md:-translate-x-1/2 md:flex-row md:items-center md:px-3 md:py-2 md:rounded-full md:gap-6 md:opacity-100 md:visible
+      `}>
         {/* Logo */}
         <div className="flex items-center justify-center gap-2 max-md:pb-3 max-md:border-b md:pl-3 md:pr-2 md:border-r border-slate-200/50">
           <Sparkles className="w-6 h-6 md:w-5 md:h-5 text-rose-400 shrink-0" />
@@ -48,6 +58,7 @@ const Layout = () => {
                 key={item.name}
                 to={item.path}
                 title={item.name}
+                onClick={() => setIsMobileMenuOpen(false)}
                 className={`flex items-center justify-center transition-all duration-300 
                   max-md:w-12 max-md:h-12 max-md:rounded-2xl
                   md:px-4 md:py-2 md:rounded-full md:text-xs md:font-semibold md:tracking-wide
@@ -91,8 +102,8 @@ const Layout = () => {
       </header>
 
       {/* Main Content Area */}
-      <main className="relative z-10 mx-auto min-h-screen max-w-7xl 
-        max-md:pl-24 max-md:pr-4 max-md:pt-12 max-md:pb-12
+      <main className="relative z-10 mx-auto min-h-screen max-w-7xl transition-all duration-500
+        max-md:px-4 max-md:pt-24 max-md:pb-12
         md:pt-32 md:px-8 md:pb-12">
         <Outlet />
       </main>
