@@ -56,7 +56,13 @@ function Dashboard() {
   // Quick expense form
   const [expenseAmount, setExpenseAmount] = useState('');
   const [expenseCategory, setExpenseCategory] = useState(language === 'vi' ? 'Ăn uống' : 'Food');
+  const [customCategory, setCustomCategory] = useState('');
   const [isSubmittingExpense, setIsSubmittingExpense] = useState(false);
+
+  const adjustAmount = (delta: number) => {
+    const current = parseFloat(expenseAmount) || 0;
+    setExpenseAmount(Math.max(0, current + delta).toString());
+  };
 
   useEffect(() => {
     fetchDashboardData();
@@ -114,12 +120,14 @@ function Dashboard() {
     e.preventDefault();
     if (!expenseAmount) return;
     
+    const finalCategory = expenseCategory === 'Custom' ? (customCategory || (language === 'vi' ? 'Khác' : 'Other')) : expenseCategory;
+
     setIsSubmittingExpense(true);
     try {
       await api.post('/finance', {
         type: 'expense',
         amount: parseFloat(expenseAmount),
-        category: expenseCategory,
+        category: finalCategory,
         description: 'Quick Add from Dashboard',
         transaction_date: new Date().toISOString()
       });
@@ -265,19 +273,35 @@ function Dashboard() {
               <h4 className="text-sm font-bold text-slate-700 mb-5 uppercase tracking-wider">{language === 'vi' ? 'Nhập chi tiêu nhanh' : 'Quick Expense'}</h4>
               <form onSubmit={handleQuickExpense} className="space-y-5">
                 <div>
-                  <div className="relative">
-                    <input 
-                      type="number"
-                      required
-                      value={expenseAmount}
-                      onChange={e => setExpenseAmount(e.target.value)}
-                      placeholder={language === 'vi' ? 'Nhập số tiền...' : 'Enter amount...'}
-                      className="w-full bg-white/50 border border-white/60 rounded-xl pl-4 pr-12 py-3.5 text-sm text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-rose-200 focus:border-rose-300 focus:bg-white outline-none transition-all shadow-inner"
-                    />
-                    <span className="absolute right-4 top-3.5 text-sm text-slate-400 font-bold">đ</span>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      type="button" 
+                      onClick={() => adjustAmount(-1000)}
+                      className="w-12 h-12 flex items-center justify-center bg-slate-100 hover:bg-rose-100 text-slate-500 hover:text-rose-500 rounded-xl font-bold text-lg transition-colors border border-slate-200 shrink-0"
+                    >
+                      -
+                    </button>
+                    <div className="relative flex-1">
+                      <input 
+                        type="number"
+                        required
+                        value={expenseAmount}
+                        onChange={e => setExpenseAmount(e.target.value)}
+                        placeholder={language === 'vi' ? 'Nhập số tiền...' : 'Enter amount...'}
+                        className="w-full bg-white/50 border border-white/60 rounded-xl pl-4 pr-12 py-3.5 text-sm text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-rose-200 focus:border-rose-300 focus:bg-white outline-none transition-all shadow-inner"
+                      />
+                      <span className="absolute right-4 top-3.5 text-sm text-slate-400 font-bold">đ</span>
+                    </div>
+                    <button 
+                      type="button" 
+                      onClick={() => adjustAmount(1000)}
+                      className="w-12 h-12 flex items-center justify-center bg-slate-100 hover:bg-green-100 text-slate-500 hover:text-green-500 rounded-xl font-bold text-lg transition-colors border border-slate-200 shrink-0"
+                    >
+                      +
+                    </button>
                   </div>
                 </div>
-                <div>
+                <div className="space-y-3">
                   <select
                     value={expenseCategory}
                     onChange={e => setExpenseCategory(e.target.value)}
@@ -287,7 +311,20 @@ function Dashboard() {
                     <option value={language === 'vi' ? 'Di chuyển' : 'Transport'} className="text-black">{language === 'vi' ? 'Di chuyển' : 'Transport'}</option>
                     <option value={language === 'vi' ? 'Mua sắm' : 'Shopping'} className="text-black">{language === 'vi' ? 'Mua sắm' : 'Shopping'}</option>
                     <option value={language === 'vi' ? 'Khác' : 'Other'} className="text-black">{language === 'vi' ? 'Khác' : 'Other'}</option>
+                    <option value="Custom" className="text-black font-bold">{language === 'vi' ? '+ Tự nhập lý do...' : '+ Custom reason...'}</option>
                   </select>
+                  
+                  {expenseCategory === 'Custom' && (
+                    <input 
+                      type="text"
+                      required
+                      value={customCategory}
+                      onChange={e => setCustomCategory(e.target.value)}
+                      placeholder={language === 'vi' ? 'Nhập lý do chi tiêu...' : 'Enter expense reason...'}
+                      className="w-full bg-white/50 border border-white/60 rounded-xl px-4 py-3.5 text-sm text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-rose-200 focus:border-rose-300 focus:bg-white outline-none transition-all shadow-inner animate-in fade-in slide-in-from-top-2"
+                      autoFocus
+                    />
+                  )}
                 </div>
                 <button
                   type="submit"
