@@ -33,6 +33,11 @@ function Finance() {
     transaction_date: new Date().toISOString().split('T')[0]
   });
 
+  const adjustAmount = (delta: number) => {
+    const current = parseFloat(formData.amount) || 0;
+    setFormData({...formData, amount: Math.max(0, current + delta).toString()});
+  };
+
   const fetchData = async () => {
     try {
       const [transRes, sumRes] = await Promise.all([
@@ -162,20 +167,36 @@ function Finance() {
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">{t('amount')} *</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <DollarSign className="h-4 w-4 text-gray-400" />
+                <div className="flex items-center gap-2">
+                  <button 
+                    type="button" 
+                    onClick={() => adjustAmount(-1000)}
+                    className="w-12 h-11 flex items-center justify-center bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-500 rounded-xl font-bold text-lg transition-colors border border-gray-200 shrink-0"
+                  >
+                    -
+                  </button>
+                  <div className="relative flex-1">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <DollarSign className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      required
+                      value={formData.amount}
+                      onChange={e => setFormData({...formData, amount: e.target.value})}
+                      className="block w-full pl-9 border border-gray-300 rounded-xl py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 sm:text-sm"
+                      placeholder="0.00"
+                    />
                   </div>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    required
-                    value={formData.amount}
-                    onChange={e => setFormData({...formData, amount: e.target.value})}
-                    className="block w-full pl-9 border border-gray-300 rounded-xl py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 sm:text-sm"
-                    placeholder="0.00"
-                  />
+                  <button 
+                    type="button" 
+                    onClick={() => adjustAmount(1000)}
+                    className="w-12 h-11 flex items-center justify-center bg-gray-100 hover:bg-green-100 text-gray-500 hover:text-green-500 rounded-xl font-bold text-lg transition-colors border border-gray-200 shrink-0"
+                  >
+                    +
+                  </button>
                 </div>
               </div>
 
