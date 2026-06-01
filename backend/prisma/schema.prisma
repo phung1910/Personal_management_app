@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int              @id @default(autoincrement())
+  username       String           @unique
+  email          String           @unique
+  password_hash  String
+  created_at     DateTime         @default(now())
+  updated_at     DateTime         @updatedAt
+  study_sessions StudySession[]
+  pomodoro_logs  PomodoroLog[]
+  tft_trackers   TftTracker[]
+  events         EventSchedule[]
+  transactions   Transaction[]
+  investments    Investment[]
+  subscriptions  Subscription[]
+  health_metrics HealthMetric[]
+}
+
+model StudySession {
+  id                  Int      @id @default(autoincrement())
+  user_id             Int
+  title               String
+  objective           String?
+  status              String   @default("todo") // todo, in_progress, completed
+  progress_percentage Int      @default(0)
+  duration_minutes    Int      @default(0)
+  target_date         DateTime?
+  user                User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model PomodoroLog {
+  id               Int      @id @default(autoincrement())
+  user_id          Int
+  task_name        String
+  duration_minutes Int
+  completed_at     DateTime @default(now())
+  user             User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model TftTracker {
+  id             Int      @id @default(autoincrement())
+  user_id        Int
+  current_tier   String
+  current_rank   String
+  lp             Int
+  matches_played Int
+  updated_at     DateTime @updatedAt
+  user           User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model EventSchedule {
+  id               Int      @id @default(autoincrement())
+  user_id          Int
+  category         String
+  title            String
+  start_time       DateTime
+  end_time         DateTime @default(now())
+  location_or_link String?
+  notes            String?
+  color            String?
+  user             User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model Transaction {
+  id               Int      @id @default(autoincrement())
+  user_id          Int
+  type             String   // income, expense
+  amount           Decimal
+  category         String
+  description      String?
+  transaction_date DateTime
+  user             User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model Investment {
+  id                Int      @id @default(autoincrement())
+  user_id           Int
+  ticker_symbol     String
+  quantity          Decimal
+  average_buy_price Decimal
+  current_price     Decimal?
+  updated_at        DateTime @updatedAt
+  user              User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model Subscription {
+  id                Int      @id @default(autoincrement())
+  user_id           Int
+  service_name      String
+  price             Decimal
+  billing_cycle     String   // monthly, yearly
+  next_billing_date DateTime
+  user              User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model HealthMetric {
+  id          Int      @id @default(autoincrement())
+  user_id     Int
+  weight      Decimal?
+  heart_rate  Int?
+  sleep_hours Decimal?
+  steps       Int?
+  log_date    DateTime @default(now())
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
