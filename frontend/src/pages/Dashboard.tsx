@@ -1,7 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { LanguageContext } from '../context/LanguageContext';
-import { Clock, Target, Calendar, CreditCard, CheckCircle2, Circle, Plus, Wallet, TrendingDown, ArrowRight, Sparkles, Timer } from 'lucide-react';
+import { Clock, Target, Calendar, CreditCard, CheckCircle2, Circle, Plus, Wallet, TrendingDown, ArrowRight, Sparkles, Timer, X, PartyPopper } from 'lucide-react';
 import api from '../api/axios';
 import { useNavigate } from 'react-router-dom';
 import { isWithinFilter } from '../utils/dateFilters';
@@ -57,8 +57,12 @@ function Dashboard() {
   const [todayTasks, setTodayTasks] = useState<StudySession[]>([]);
   const [finance, setFinance] = useState<FinanceSummary | null>(null);
 
-  // Widget Summary
-  const [showSummaryAnimation, setShowSummaryAnimation] = useState(false);
+  // Live Clock
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Widget Summary Modal
+  const [showSummaryModal, setShowSummaryModal] = useState(false);
+  const [isClosingSummary, setIsClosingSummary] = useState(false);
   const [miniSummary, setMiniSummary] = useState({ pomodoroTime: 0, completedTasks: 0, expense: 0 });
 
   // Quick expense form
@@ -75,6 +79,11 @@ function Dashboard() {
   useEffect(() => {
     fetchDashboardData();
   }, [language]);
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const fetchDashboardData = async () => {
     try {
@@ -172,6 +181,14 @@ function Dashboard() {
     }
   };
 
+  const handleCloseSummary = () => {
+    setIsClosingSummary(true);
+    setTimeout(() => {
+      setShowSummaryModal(false);
+      setIsClosingSummary(false);
+    }, 380); // matches the 0.4s animation closely
+  };
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
   };
@@ -187,22 +204,52 @@ function Dashboard() {
   return (
     <div className="space-y-12 max-w-7xl mx-auto pb-10">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pt-8">
-        <div className="max-w-2xl">
-          <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight mb-4 leading-tight text-slate-800">
-            {language === 'vi' ? 'Khám phá không gian' : 'Explore unique abstract'} <br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-orange-400">
-              {language === 'vi' ? 'làm việc của bạn.' : 'designs that defy'}
-            </span>
-          </h1>
-          <p className="text-slate-500 text-lg md:text-xl font-medium max-w-xl leading-relaxed">
-            {language === 'vi' 
-              ? `Chào mừng ${user?.username}. Hôm nay là một ngày tuyệt vời để hoàn thành mục tiêu!` 
-              : `Welcome back, ${user?.username}. Today is a great day to accomplish your goals!`}
-          </p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-8">
+        <div className="lg:col-span-2 flex flex-col justify-end">
+          <div className="max-w-2xl">
+            <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight mb-4 leading-tight text-slate-800">
+              {language === 'vi' ? 'Khám phá không gian' : 'Explore unique abstract'} <br/>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-orange-400">
+                {language === 'vi' ? 'làm việc của bạn.' : 'designs that defy'}
+              </span>
+            </h1>
+            <p className="text-slate-500 text-lg md:text-xl font-medium max-w-xl leading-relaxed">
+              {language === 'vi' 
+                ? `Chào mừng ${user?.username}. Hôm nay là một ngày tuyệt vời để hoàn thành mục tiêu!` 
+                : `Welcome back, ${user?.username}. Today is a great day to accomplish your goals!`}
+            </p>
+          </div>
         </div>
-        <div className="relative z-10 bg-white/60 backdrop-blur-xl px-6 py-3 rounded-2xl text-sm font-semibold border border-white/50 shadow-sm hover:bg-white transition-colors cursor-default text-slate-600">
-          {new Date().toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+
+        {/* Clock & Current Task Widget */}
+        <div className="flex flex-col justify-end">
+          <div className="relative group/clock transition-all duration-500 hover:-translate-y-2 w-full lg:-translate-y-4">
+            <div className="relative z-10 flex flex-col justify-end h-full w-full">
+              <div className="flex justify-start items-end mb-5">
+                <div className="text-left">
+                  <h3 className="text-5xl font-black tracking-tight font-mono text-slate-800 leading-none">
+                    {currentTime.toLocaleTimeString([], { hour12: false })}
+                  </h3>
+                  <p className="text-slate-500 text-sm font-medium mt-2 uppercase tracking-wide">
+                    {currentTime.toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-100 relative overflow-hidden group-hover/clock:bg-white transition-colors duration-300 w-full shadow-sm">
+                <div className="absolute top-0 left-0 w-1 h-full bg-green-400"></div>
+                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-2 ml-2">{language === 'vi' ? 'Nhiệm vụ kế tiếp' : 'Next Task'}</p>
+                {todayTasks.length > 0 ? (
+                  <div className="flex items-center gap-3 ml-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse shrink-0 shadow-[0_0_8px_rgba(74,222,128,0.6)]"></div>
+                    <p className="font-bold text-sm truncate text-slate-700 leading-tight">{todayTasks[0].title}</p>
+                  </div>
+                ) : (
+                  <p className="font-medium text-sm text-slate-500 ml-2">{language === 'vi' ? 'Hoàn thành hết mọi việc rồi!' : 'All caught up!'}</p>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -314,57 +361,24 @@ function Dashboard() {
 
         {/* Column 2: Right Column */}
         <div className="space-y-6">
+
           
-          {/* Summary Widget */}
-          <div className={`bg-white/70 backdrop-blur-xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-700 border border-white/60 overflow-hidden relative group/summary ${showSummaryAnimation ? 'pb-6' : 'hover:-translate-y-2 hover:bg-white/90 cursor-pointer hover:shadow-[0_15px_40px_rgb(0,0,0,0.08)]'}`}
-               onClick={() => !showSummaryAnimation && setShowSummaryAnimation(true)}
+          {/* Summary Widget Button */}
+          <div className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300 border border-white/60 overflow-hidden group/summary hover:-translate-y-2 hover:bg-white/90 cursor-pointer hover:shadow-[0_15px_40px_rgb(0,0,0,0.08)]"
+               onClick={() => setShowSummaryModal(true)}
           >
-             {/* Header / Prompt */}
              <div className="p-8 flex items-center justify-between relative z-10">
                <div className="pr-4">
                   <h3 className="text-lg font-bold text-slate-800 mb-1">{language === 'vi' ? 'Xem lại tổng kết hôm nay?' : 'See today summary?'}</h3>
-                  {!showSummaryAnimation && (
-                    <p className="text-xs text-slate-500 font-medium">{language === 'vi' ? 'Nhấn để khám phá thành quả của bạn' : 'Tap to reveal your achievements'}</p>
-                  )}
+                  <p className="text-xs text-slate-500 font-medium">{language === 'vi' ? 'Nhấn để khám phá thành quả của bạn' : 'Tap to reveal your achievements'}</p>
                </div>
-               {!showSummaryAnimation ? (
-                 <div className="w-12 h-12 bg-indigo-100 rounded-2xl flex items-center justify-center text-indigo-500 group-hover/summary:scale-110 group-hover/summary:rotate-12 transition-all duration-300 shrink-0 shadow-sm border border-indigo-200">
-                   <Sparkles className="w-6 h-6 animate-pulse" />
-                 </div>
-               ) : (
-                 <button onClick={(e) => { e.stopPropagation(); navigate('/summary'); }} className="flex items-center gap-1.5 text-xs font-bold text-indigo-500 hover:text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-full transition-colors shrink-0">
-                   {language === 'vi' ? 'Chi tiết' : 'View all'}
-                   <ArrowRight className="w-3 h-3" />
-                 </button>
-               )}
-             </div>
-
-             {/* Expanded content */}
-             <div className={`transition-all duration-1000 ease-in-out px-6 grid grid-cols-3 gap-3 overflow-hidden ${showSummaryAnimation ? 'max-h-64 opacity-100 mt-0' : 'max-h-0 opacity-0'}`}>
-                
-                {/* Task */}
-                <div className={`flex flex-col items-center justify-center bg-indigo-50/70 rounded-2xl p-4 transform transition-all duration-1000 border border-indigo-100/50 ${showSummaryAnimation ? 'translate-y-0 opacity-100 delay-100' : 'translate-y-10 opacity-0'}`}>
-                  <CheckCircle2 className="w-5 h-5 text-indigo-400 mb-2" />
-                  <span className="text-2xl font-extrabold text-slate-700">{miniSummary.completedTasks}</span>
-                  <span className="text-[9px] font-bold text-slate-400 uppercase mt-1">Tasks</span>
-                </div>
-
-                {/* Pomodoro */}
-                <div className={`flex flex-col items-center justify-center bg-orange-50/70 rounded-2xl p-4 transform transition-all duration-1000 border border-orange-100/50 ${showSummaryAnimation ? 'translate-y-0 opacity-100 delay-300' : 'translate-y-10 opacity-0'}`}>
-                  <Timer className="w-5 h-5 text-orange-400 mb-2" />
-                  <span className="text-2xl font-extrabold text-slate-700">{miniSummary.pomodoroTime}</span>
-                  <span className="text-[9px] font-bold text-slate-400 uppercase mt-1">Phút</span>
-                </div>
-
-                {/* Expense */}
-                <div className={`flex flex-col items-center justify-center bg-rose-50/70 rounded-2xl p-4 transform transition-all duration-1000 border border-rose-100/50 text-center ${showSummaryAnimation ? 'translate-y-0 opacity-100 delay-500' : 'translate-y-10 opacity-0'}`}>
-                  <TrendingDown className="w-5 h-5 text-rose-400 mb-2" />
-                  <span className="text-base font-extrabold text-slate-700 truncate w-full">{miniSummary.expense >= 1000 ? (miniSummary.expense/1000) + 'k' : miniSummary.expense}</span>
-                  <span className="text-[9px] font-bold text-slate-400 uppercase mt-1">Chi</span>
-                </div>
+               <div className="w-12 h-12 bg-indigo-100 rounded-2xl flex items-center justify-center text-indigo-500 group-hover/summary:scale-110 group-hover/summary:rotate-12 transition-all duration-300 shrink-0 shadow-sm border border-indigo-200">
+                 <Sparkles className="w-6 h-6 animate-pulse" />
+               </div>
              </div>
           </div>
 
+          {/* Finance Widget */}
           <div className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-500 border border-white/60 overflow-hidden hover:-translate-y-2 hover:bg-white/90 group/card">
             <div className="bg-gradient-to-br from-rose-100 via-fuchsia-100 to-indigo-100 p-8 text-slate-800 relative border-b border-white/50">
               <Wallet className="absolute right-[-10%] top-[-10%] w-48 h-48 text-rose-300 opacity-20 transform rotate-12 group-hover/card:rotate-0 transition-transform duration-700" />
@@ -453,6 +467,67 @@ function Dashboard() {
         </div>
 
       </div>
+
+      {/* Fullscreen Summary Modal */}
+      {showSummaryModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 sm:px-6">
+          <div className={`absolute inset-0 bg-slate-900/40 backdrop-blur-md ${isClosingSummary ? 'animate-out fade-out duration-500 ease-in' : 'animate-in fade-in duration-700 ease-out'}`} onClick={handleCloseSummary}></div>
+          
+          <div className={`bg-white/95 backdrop-blur-2xl w-[95%] md:w-[70%] max-w-4xl rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] relative z-10 overflow-hidden border border-white/50 ${isClosingSummary ? 'animate-modal-close' : 'animate-modal-pop'}`}>
+            
+            <button 
+              onClick={handleCloseSummary}
+              className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center bg-slate-100/50 hover:bg-rose-100 text-slate-400 hover:text-rose-500 rounded-full transition-all duration-500 z-20 hover:scale-110"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="p-8 md:p-14">
+              <div className="text-center mb-12 animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-300 fill-mode-both ease-out">
+                <div className="inline-flex items-center justify-center w-20 h-20 bg-amber-100/80 text-amber-500 rounded-full mb-6 animate-bounce shadow-inner">
+                  <PartyPopper className="w-10 h-10" />
+                </div>
+                <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-slate-800 mb-4">
+                  {language === 'vi' ? 'Làm tốt lắm!' : 'Great job!'}
+                </h2>
+                <p className="text-slate-500 text-lg">
+                  {language === 'vi' ? 'Dưới đây là những gì bạn đã đạt được trong hôm nay. Cứ tiếp tục phát huy nhé!' : "Here's what you've achieved today. Keep up the good work!"}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Task */}
+                <div className="flex flex-col items-center justify-center bg-indigo-50/70 rounded-3xl p-8 border border-indigo-100/50 shadow-sm animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-[500ms] fill-mode-both cursor-default">
+                  <CheckCircle2 className="w-10 h-10 text-indigo-400 mb-4" />
+                  <span className="text-5xl font-extrabold text-slate-700 mb-2">{miniSummary.completedTasks}</span>
+                  <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">{language === 'vi' ? 'Công việc' : 'Tasks'}</span>
+                </div>
+
+                {/* Pomodoro */}
+                <div className="flex flex-col items-center justify-center bg-orange-50/70 rounded-3xl p-8 border border-orange-100/50 shadow-sm animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-[700ms] fill-mode-both cursor-default">
+                  <Timer className="w-10 h-10 text-orange-400 mb-4" />
+                  <span className="text-5xl font-extrabold text-slate-700 mb-2">{miniSummary.pomodoroTime}</span>
+                  <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">{language === 'vi' ? 'Phút tập trung' : 'Minutes'}</span>
+                </div>
+
+                {/* Expense */}
+                <div className="flex flex-col items-center justify-center bg-rose-50/70 rounded-3xl p-8 border border-rose-100/50 shadow-sm text-center animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-[900ms] fill-mode-both cursor-default">
+                  <TrendingDown className="w-10 h-10 text-rose-400 mb-4" />
+                  <span className="text-3xl lg:text-4xl font-extrabold text-slate-700 mb-2">{new Intl.NumberFormat('vi-VN').format(miniSummary.expense)}</span>
+                  <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">{language === 'vi' ? 'Tiền đã chi' : 'Spent'}</span>
+                </div>
+              </div>
+
+              <div className="mt-12 text-center animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-[1100ms] fill-mode-both ease-out">
+                <button onClick={() => { handleCloseSummary(); setTimeout(() => navigate('/summary'), 400); }} className="inline-flex items-center gap-3 bg-slate-800 hover:bg-indigo-600 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-500 hover:shadow-[0_10px_25px_rgba(79,70,229,0.3)] hover:-translate-y-1 active:scale-95">
+                  {language === 'vi' ? 'Xem chi tiết tất cả' : 'View full details'}
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect, useMemo } from 'react';
 import { LanguageContext } from '../context/LanguageContext';
-import { CheckCircle2, Timer, TrendingDown, TrendingUp, Sparkles, Calendar, CalendarDays, CalendarRange, Infinity as InfinityIcon } from 'lucide-react';
+import { CheckCircle2, Timer, TrendingDown, TrendingUp, Sparkles, Calendar, CalendarDays, CalendarRange, Infinity as InfinityIcon, X, PlusCircle, MinusCircle } from 'lucide-react';
 import api from '../api/axios';
 import { isWithinFilter } from '../utils/dateFilters';
 import type { TimeFilter } from '../utils/dateFilters';
@@ -11,6 +11,8 @@ function Summary() {
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
   const [loading, setLoading] = useState(true);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [activeModal, setActiveModal] = useState<'pomodoro' | 'finance' | 'tasks' | null>(null);
+  const [isClosingModal, setIsClosingModal] = useState(false);
 
   // Raw data
   const [pomodoroLogs, setPomodoroLogs] = useState<any[]>([]);
@@ -38,6 +40,14 @@ function Summary() {
     fetchSummaryData();
   }, []);
 
+  const handleCloseModal = () => {
+    setIsClosingModal(true);
+    setTimeout(() => {
+      setActiveModal(null);
+      setIsClosingModal(false);
+    }, 380); // match animation duration
+  };
+
   // Calculate stats based on filter
   const summaryStats = useMemo(() => {
     // Filter Pomodoro (uses completed_at or created_at)
@@ -58,6 +68,9 @@ function Summary() {
       completedTasks: completedTasksCount,
       totalIncome,
       totalExpense,
+      filteredPomodoro,
+      filteredTasks,
+      filteredTransactions,
     };
   }, [pomodoroLogs, studySessions, transactions, timeFilter]);
 
@@ -123,7 +136,10 @@ function Summary() {
       ) : (
         <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 transition-opacity duration-300 ${isTransitioning ? 'opacity-40 scale-[0.98]' : 'opacity-100 scale-100'}`}>
           {/* Pomodoro Stats */}
-          <div className="bg-white/70 backdrop-blur-xl rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60 flex flex-col justify-center items-center text-center gap-5 hover:-translate-y-2 transition-all duration-300 group/card">
+          <div 
+            onClick={() => setActiveModal('pomodoro')}
+            className="bg-white/70 backdrop-blur-xl rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60 flex flex-col justify-center items-center text-center gap-5 hover:-translate-y-2 transition-all duration-300 group/card cursor-pointer"
+          >
             <div className="w-20 h-20 rounded-3xl bg-orange-100 flex items-center justify-center text-orange-500 group-hover/card:scale-110 group-hover/card:rotate-6 transition-all duration-300">
               <Timer className="w-10 h-10" />
             </div>
@@ -137,7 +153,10 @@ function Summary() {
           </div>
 
           {/* Finance Stats */}
-          <div className="bg-white/70 backdrop-blur-xl rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60 flex flex-col justify-center gap-6 hover:-translate-y-2 transition-all duration-300 group/card">
+          <div 
+            onClick={() => setActiveModal('finance')}
+            className="bg-white/70 backdrop-blur-xl rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60 flex flex-col justify-center gap-6 hover:-translate-y-2 transition-all duration-300 group/card cursor-pointer"
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-2xl bg-green-100 flex items-center justify-center text-green-500 group-hover/card:scale-110 transition-transform">
@@ -164,7 +183,10 @@ function Summary() {
           </div>
 
           {/* Task Stats */}
-          <div className="bg-white/70 backdrop-blur-xl rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60 flex flex-col justify-center items-center text-center gap-5 hover:-translate-y-2 transition-all duration-300 group/card">
+          <div 
+            onClick={() => setActiveModal('tasks')}
+            className="bg-white/70 backdrop-blur-xl rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60 flex flex-col justify-center items-center text-center gap-5 hover:-translate-y-2 transition-all duration-300 group/card cursor-pointer"
+          >
             <div className="w-20 h-20 rounded-3xl bg-indigo-100 flex items-center justify-center text-indigo-500 group-hover/card:scale-110 group-hover/card:-rotate-6 transition-all duration-300">
               <CheckCircle2 className="w-10 h-10" />
             </div>
@@ -175,6 +197,97 @@ function Summary() {
           </div>
         </div>
       )}
+
+      {/* Detail Modal */}
+      {activeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 sm:px-6">
+          <div className={`absolute inset-0 bg-slate-900/40 backdrop-blur-md ${isClosingModal ? 'animate-out fade-out duration-500 ease-in' : 'animate-in fade-in duration-700 ease-out'}`} onClick={handleCloseModal}></div>
+          
+          <div className={`bg-[#fcf9f5] w-full md:w-[60%] max-w-3xl rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] relative z-10 overflow-hidden border border-white/50 flex flex-col max-h-[85vh] ${isClosingModal ? 'animate-modal-close' : 'animate-modal-pop'}`}>
+            <div className="p-8 pb-4 flex justify-between items-center border-b border-slate-200/50 bg-white/50">
+              <h2 className="text-2xl font-extrabold text-slate-800 flex items-center gap-3">
+                {activeModal === 'pomodoro' && (
+                  <><Timer className="w-8 h-8 text-orange-500" /> {language === 'vi' ? 'Chi tiết Pomodoro' : 'Pomodoro Details'}</>
+                )}
+                {activeModal === 'finance' && (
+                  <><TrendingUp className="w-8 h-8 text-green-500" /> {language === 'vi' ? 'Chi tiết Tài chính' : 'Finance Details'}</>
+                )}
+                {activeModal === 'tasks' && (
+                  <><CheckCircle2 className="w-8 h-8 text-indigo-500" /> {language === 'vi' ? 'Task Hoàn Thành' : 'Completed Tasks'}</>
+                )}
+              </h2>
+              <button 
+                onClick={handleCloseModal}
+                className="w-10 h-10 flex items-center justify-center bg-slate-100 hover:bg-rose-100 text-slate-400 hover:text-rose-500 rounded-full transition-all duration-300 hover:scale-110"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-8 overflow-y-auto flex-1 space-y-4">
+              {activeModal === 'pomodoro' && summaryStats.filteredPomodoro.length === 0 && (
+                <p className="text-center text-slate-500 py-10">{language === 'vi' ? 'Không có phiên tập trung nào.' : 'No focus sessions yet.'}</p>
+              )}
+              {activeModal === 'pomodoro' && summaryStats.filteredPomodoro.map((log: any) => (
+                <div key={log.id} className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex justify-between items-center hover:border-orange-200 transition-colors">
+                  <div>
+                    <p className="font-bold text-slate-700">{log.task_name || (language === 'vi' ? 'Không có tên' : 'Unnamed Task')}</p>
+                    <p className="text-xs font-medium text-slate-400 mt-1">
+                      {new Date(log.completed_at || log.created_at).toLocaleString(language === 'vi' ? 'vi-VN' : 'en-US')}
+                    </p>
+                  </div>
+                  <div className="bg-orange-50 text-orange-600 font-bold px-4 py-2 rounded-xl text-sm border border-orange-100">
+                    {log.duration_minutes} min
+                  </div>
+                </div>
+              ))}
+
+              {activeModal === 'finance' && summaryStats.filteredTransactions.length === 0 && (
+                <p className="text-center text-slate-500 py-10">{language === 'vi' ? 'Không có giao dịch nào.' : 'No transactions found.'}</p>
+              )}
+              {activeModal === 'finance' && summaryStats.filteredTransactions.sort((a: any, b: any) => new Date(b.transaction_date).getTime() - new Date(a.transaction_date).getTime()).map((t: any) => (
+                <div key={t.id} className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex justify-between items-center hover:shadow-md transition-shadow">
+                  <div className="flex items-center gap-4">
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${t.type === 'income' ? 'bg-green-50 text-green-500' : 'bg-rose-50 text-rose-500'}`}>
+                      {t.type === 'income' ? <PlusCircle className="w-6 h-6" /> : <MinusCircle className="w-6 h-6" />}
+                    </div>
+                    <div>
+                      <p className="font-bold text-slate-700">{t.category}</p>
+                      <p className="text-xs font-medium text-slate-400 mt-1">
+                        {t.description && <span className="mr-2">{t.description} • </span>}
+                        {new Date(t.transaction_date).toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US')}
+                      </p>
+                    </div>
+                  </div>
+                  <div className={`font-extrabold text-lg ${t.type === 'income' ? 'text-green-600' : 'text-rose-600'}`}>
+                    {t.type === 'income' ? '+' : '-'}{formatCurrency(t.amount)}
+                  </div>
+                </div>
+              ))}
+
+              {activeModal === 'tasks' && summaryStats.filteredTasks.length === 0 && (
+                <p className="text-center text-slate-500 py-10">{language === 'vi' ? 'Không có nhiệm vụ nào hoàn thành.' : 'No completed tasks found.'}</p>
+              )}
+              {activeModal === 'tasks' && summaryStats.filteredTasks.map((task: any) => (
+                <div key={task.id} className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 hover:border-indigo-200 transition-colors flex items-start gap-4">
+                  <CheckCircle2 className="w-6 h-6 text-indigo-400 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold text-slate-700 text-lg">{task.title}</p>
+                    {task.objective && <p className="text-sm text-slate-500 mt-1">{task.objective}</p>}
+                    <p className="text-xs font-medium text-slate-400 mt-2 flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5" />
+                      {task.target_date 
+                        ? new Date(task.target_date).toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US') 
+                        : (language === 'vi' ? 'Không có ngày hạn' : 'No target date')}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

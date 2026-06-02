@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { LanguageContext } from '../context/LanguageContext';
 import { LayoutDashboard, CheckSquare, LogOut, Calendar, Timer, Wallet, Sparkles, Menu, X, PieChart } from 'lucide-react';
-import CurrentTimeWidget from './CurrentTimeWidget';
+
 const Layout = () => {
   const { user, logout } = useContext(AuthContext);
   const { language, setLanguage, t } = useContext(LanguageContext);
@@ -40,7 +40,6 @@ const Layout = () => {
         {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
       </button>
 
-      <CurrentTimeWidget />
 
       {/* Navigation (Left Sidebar on Mobile, Top Bar on Desktop) */}
       <header className={`fixed z-50 flex bg-white/60 backdrop-blur-2xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.05)] transition-all duration-500
