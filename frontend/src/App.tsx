@@ -12,6 +12,7 @@ import StudySessions from './pages/StudySessions';
 import Schedule from './pages/Schedule';
 import Pomodoro from './pages/Pomodoro';
 import Finance from './pages/Finance';
+import Summary from './pages/Summary';
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
               <Route path="/schedule" element={<Schedule />} />
               <Route path="/pomodoro" element={<Pomodoro />} />
               <Route path="/finance" element={<Finance />} />
+              <Route path="/summary" element={<Summary />} />
               {/* Add more protected routes here */}
             </Route>
           </Route>

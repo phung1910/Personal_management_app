@@ -2,8 +2,8 @@ import React, { useContext, useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { LanguageContext } from '../context/LanguageContext';
-import { LayoutDashboard, CheckSquare, LogOut, Calendar, Timer, Wallet, Sparkles, Menu, X } from 'lucide-react';
-
+import { LayoutDashboard, CheckSquare, LogOut, Calendar, Timer, Wallet, Sparkles, Menu, X, PieChart } from 'lucide-react';
+import CurrentTimeWidget from './CurrentTimeWidget';
 const Layout = () => {
   const { user, logout } = useContext(AuthContext);
   const { language, setLanguage, t } = useContext(LanguageContext);
@@ -16,6 +16,7 @@ const Layout = () => {
     { name: t('weekly_schedule'), path: '/schedule', icon: Calendar },
     { name: t('pomodoro'), path: '/pomodoro', icon: Timer },
     { name: t('finance'), path: '/finance', icon: Wallet },
+    { name: t('summary'), path: '/summary', icon: PieChart },
   ];
 
   return (
@@ -25,16 +26,21 @@ const Layout = () => {
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-rose-200/40 blur-[100px] rounded-full animate-pulse" style={{ animationDuration: '8s' }} />
         <div className="absolute top-[20%] right-[-10%] w-[50%] h-[50%] bg-blue-200/40 blur-[120px] rounded-full" />
         <div className="absolute bottom-[-20%] left-[20%] w-[60%] h-[60%] bg-amber-200/30 blur-[110px] rounded-full" />
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] mix-blend-overlay"></div>
+        <div 
+          className="absolute inset-0 opacity-[0.03] mix-blend-overlay"
+          style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}
+        ></div>
       </div>
 
       {/* Mobile Menu Toggle Button */}
-      <button 
+      <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         className="md:hidden fixed top-4 left-4 z-[60] w-12 h-12 flex items-center justify-center bg-white/70 backdrop-blur-2xl border border-white/50 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.05)] text-slate-700 hover:text-rose-500 hover:bg-white transition-all active:scale-95"
       >
         {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
       </button>
+
+      <CurrentTimeWidget />
 
       {/* Navigation (Left Sidebar on Mobile, Top Bar on Desktop) */}
       <header className={`fixed z-50 flex bg-white/60 backdrop-blur-2xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.05)] transition-all duration-500
@@ -47,7 +53,7 @@ const Layout = () => {
           <Sparkles className="w-6 h-6 md:w-5 md:h-5 text-rose-400 shrink-0" />
           <span className="text-sm font-bold text-slate-700 tracking-wider uppercase max-md:hidden">Perso</span>
         </div>
-        
+
         {/* Nav Links */}
         <nav className="flex items-center max-md:flex-col md:gap-1 gap-3">
           {navItems.map((item) => {
@@ -65,7 +71,7 @@ const Layout = () => {
                   ${isActive
                     ? 'bg-white text-rose-500 shadow-sm md:scale-105 max-md:scale-110'
                     : 'text-slate-500 hover:text-slate-800 hover:bg-white/50'
-                }`}
+                  }`}
               >
                 <Icon className="w-6 h-6 md:hidden" />
                 <span className="max-md:hidden">{item.name}</span>
@@ -90,7 +96,7 @@ const Layout = () => {
               VI
             </button>
           </div>
-          
+
           <button
             onClick={logout}
             className="flex items-center justify-center w-10 h-10 md:w-8 md:h-8 rounded-full bg-white/50 hover:bg-rose-100 hover:text-rose-500 text-slate-400 transition-all duration-300 border border-transparent hover:border-rose-200 group shrink-0"
