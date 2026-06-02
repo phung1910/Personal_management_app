@@ -168,9 +168,9 @@ export const LanguageProvider: React.FC<{children: React.ReactNode}> = ({ childr
   const formatTime = (dateInput: string | Date) => {
     const date = new Date(dateInput);
     if (language === 'vi') {
-      return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+      return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false });
     }
-    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
   };
 
   return (

@@ -50,13 +50,9 @@ const TimePicker = ({ timeStr, onChange }: { timeStr: string, onChange: (t: stri
   let hours = parseInt(hoursStr, 10);
   if (isNaN(hours)) hours = 8;
   const minutes = minutesStr || '00';
-  const ampm = hours >= 12 ? 'PM' : 'AM';
-  const displayHours = hours % 12 || 12;
 
   const handleHourChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     let newH = parseInt(e.target.value, 10);
-    if (ampm === 'PM' && newH !== 12) newH += 12;
-    if (ampm === 'AM' && newH === 12) newH = 0;
     onChange(`${newH.toString().padStart(2, '0')}:${minutes}`);
   };
 
@@ -64,19 +60,10 @@ const TimePicker = ({ timeStr, onChange }: { timeStr: string, onChange: (t: stri
     onChange(`${hours.toString().padStart(2, '0')}:${e.target.value}`);
   };
 
-  const handleAmPmChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newAmPm = e.target.value;
-    if (newAmPm !== ampm) {
-      if (newAmPm === 'PM') hours = (hours % 12) + 12;
-      else hours = hours % 12;
-      onChange(`${hours.toString().padStart(2, '0')}:${minutes}`);
-    }
-  };
-
   return (
     <div className="flex items-center gap-1 bg-white border border-gray-300 rounded-md px-1 py-1 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500">
-      <select value={displayHours} onChange={handleHourChange} className="appearance-none bg-transparent outline-none cursor-pointer text-sm font-medium px-1">
-        {Array.from({length: 12}, (_, i) => i + 1).map(h => <option key={h} value={h}>{h.toString().padStart(2, '0')}</option>)}
+      <select value={hours} onChange={handleHourChange} className="appearance-none bg-transparent outline-none cursor-pointer text-sm font-medium px-1">
+        {Array.from({length: 24}, (_, i) => i).map(h => <option key={h} value={h}>{h.toString().padStart(2, '0')}</option>)}
       </select>
       <span className="text-gray-400 font-bold">:</span>
       <select value={minutes} onChange={handleMinuteChange} className="appearance-none bg-transparent outline-none cursor-pointer text-sm font-medium px-1">
@@ -84,10 +71,6 @@ const TimePicker = ({ timeStr, onChange }: { timeStr: string, onChange: (t: stri
           const mStr = m.toString().padStart(2, '0');
           return <option key={mStr} value={mStr}>{mStr}</option>;
         })}
-      </select>
-      <select value={ampm} onChange={handleAmPmChange} className="appearance-none bg-transparent outline-none cursor-pointer text-sm font-bold text-blue-600 px-1 ml-1">
-        <option value="AM">AM</option>
-        <option value="PM">PM</option>
       </select>
     </div>
   );
@@ -201,7 +184,7 @@ function Schedule() {
   };
 
   const formatTimeRange = (start: string, end: string) => {
-    const formatOpts: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: '2-digit', hour12: true };
+    const formatOpts: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: '2-digit', hour12: false };
     const s = new Date(start).toLocaleTimeString(language === 'vi' ? 'vi-VN' : 'en-US', formatOpts);
     const e = new Date(end).toLocaleTimeString(language === 'vi' ? 'vi-VN' : 'en-US', formatOpts);
     return `${s} - ${e}`;
@@ -381,7 +364,7 @@ function Schedule() {
             {HOURS.map(h => (
               <div key={h} className="h-[36px] relative">
                 <span className="absolute -top-2.5 right-2 text-[10px] text-gray-500 font-medium">
-                  {h === 0 ? '' : h < 12 ? `${h} AM` : h === 12 ? '12 PM' : `${h-12} PM`}
+                  {h.toString().padStart(2, '0')}:00
                 </span>
               </div>
             ))}
@@ -498,7 +481,7 @@ function Schedule() {
 
               {formData.start_time && formData.end_time && new Date(formData.start_time) >= new Date(formData.end_time) && (
                 <div className="text-red-500 text-xs font-medium px-1">
-                  ⚠️ {language === 'vi' ? 'Giờ kết thúc phải lớn hơn Giờ bắt đầu. (Lưu ý: 12h trưa là 12:xx PM)' : 'End time must be after start time. (Note: Noon is 12:xx PM)'}
+                  ⚠️ {language === 'vi' ? 'Giờ kết thúc phải lớn hơn Giờ bắt đầu.' : 'End time must be after start time.'}
                 </div>
               )}
 
