@@ -244,19 +244,23 @@ function Schedule() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const payload = {
+        ...formData,
+        start_time: new Date(formData.start_time as string).toISOString(),
+        end_time: new Date(formData.end_time as string).toISOString()
+      };
+
       if (editingId) {
-        const res = await api.put(`/events/${editingId}`, formData);
+        const res = await api.put(`/events/${editingId}`, payload);
         setEvents(events.map(ev => ev.id === editingId ? res.data : ev));
       } else {
         if (isRepeat && repeatDays.length > 0) {
           const bulkEvents = [];
-          const startDateStr = formData.start_time as string;
-          const endDateStr = formData.end_time as string;
           
           for (let week = 0; week < repeatWeeks; week++) {
             for (const dayOfWeek of repeatDays) {
-              const baseStart = new Date(startDateStr);
-              const baseEnd = new Date(endDateStr);
+              const baseStart = new Date(formData.start_time as string);
+              const baseEnd = new Date(formData.end_time as string);
               
               // Normalize days (Mon=1 ... Sun=7) to ensure they stay in the same calendar week
               const normalizeDay = (d: number) => d === 0 ? 7 : d;
@@ -268,7 +272,7 @@ function Schedule() {
               baseEnd.setDate(baseEnd.getDate() + (week * 7) + dayOffset);
               
               bulkEvents.push({
-                ...formData,
+                ...payload,
                 start_time: baseStart.toISOString(),
                 end_time: baseEnd.toISOString(),
               });
@@ -277,7 +281,7 @@ function Schedule() {
           await api.post('/events/bulk', { events: bulkEvents });
           fetchEvents();
         } else {
-          const res = await api.post('/events', formData);
+          const res = await api.post('/events', payload);
           setEvents([...events, res.data]);
         }
       }
