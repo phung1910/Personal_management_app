@@ -24,17 +24,15 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
           
-          {/* Protected Routes Wrapper */}
-          <Route element={<ProtectedRoute />}>
-            <Route element={<Layout />}>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/study" element={<StudySessions />} />
-              <Route path="/schedule" element={<Schedule />} />
-              <Route path="/pomodoro" element={<Pomodoro />} />
-              <Route path="/finance" element={<Finance />} />
-              <Route path="/summary" element={<Summary />} />
-              {/* Add more protected routes here */}
-            </Route>
+          {/* Main Layout Wrapper */}
+          <Route element={<Layout />}>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/study" element={<StudySessions />} />
+            <Route path="/schedule" element={<Schedule />} />
+            <Route path="/pomodoro" element={<Pomodoro />} />
+            <Route path="/finance" element={<Finance />} />
+            <Route path="/summary" element={<Summary />} />
+            {/* Add more routes here */}
           </Route>
           
           {/* Fallback route */}

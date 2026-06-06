@@ -55,6 +55,8 @@ const translations = {
     cat_entertainment: 'Entertainment',
     cat_salary: 'Salary',
     cat_investments: 'Investments',
+    login_to_save: 'Login to save your information',
+    login: 'Login',
   },
   vi: {
     dashboard: 'Trang chủ',
@@ -108,6 +110,8 @@ const translations = {
     cat_entertainment: 'Giải trí',
     cat_salary: 'Tiền lương',
     cat_investments: 'Đầu tư',
+    login_to_save: 'Đăng nhập để lưu lại thông tin',
+    login: 'Đăng nhập',
   }
 };
 

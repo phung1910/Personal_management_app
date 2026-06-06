@@ -2,7 +2,7 @@ import React, { useContext, useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { LanguageContext } from '../context/LanguageContext';
-import { LayoutDashboard, CheckSquare, LogOut, Calendar, Timer, Wallet, Sparkles, Menu, X, PieChart } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, LogOut, Calendar, Timer, Wallet, Sparkles, Menu, X, PieChart, LogIn } from 'lucide-react';
 
 const Layout = () => {
   const { user, logout } = useContext(AuthContext);
@@ -96,13 +96,23 @@ const Layout = () => {
             </button>
           </div>
 
-          <button
-            onClick={logout}
-            className="flex items-center justify-center w-10 h-10 md:w-8 md:h-8 rounded-full bg-white/50 hover:bg-rose-100 hover:text-rose-500 text-slate-400 transition-all duration-300 border border-transparent hover:border-rose-200 group shrink-0"
-            title={t('sign_out')}
-          >
-            <LogOut className="w-4 h-4 md:group-hover:scale-110 transition-transform" />
-          </button>
+          {user ? (
+            <button
+              onClick={logout}
+              className="flex items-center justify-center w-10 h-10 md:w-8 md:h-8 rounded-full bg-white/50 hover:bg-rose-100 hover:text-rose-500 text-slate-400 transition-all duration-300 border border-transparent hover:border-rose-200 group shrink-0"
+              title={t('sign_out')}
+            >
+              <LogOut className="w-4 h-4 md:group-hover:scale-110 transition-transform" />
+            </button>
+          ) : (
+            <Link
+              to="/login"
+              className="flex items-center justify-center w-10 h-10 md:w-8 md:h-8 rounded-full bg-white/50 hover:bg-emerald-100 hover:text-emerald-500 text-slate-400 transition-all duration-300 border border-transparent hover:border-emerald-200 group shrink-0"
+              title={t('login')}
+            >
+              <LogIn className="w-4 h-4 md:group-hover:scale-110 transition-transform" />
+            </Link>
+          )}
         </div>
       </header>
 
@@ -110,6 +120,14 @@ const Layout = () => {
       <main className="relative z-10 mx-auto min-h-screen max-w-7xl transition-all duration-500
         max-md:px-4 max-md:pt-24 max-md:pb-12
         md:pt-32 md:px-8 md:pb-12">
+        {!user && (
+          <div className="mb-6 bg-blue-50/80 backdrop-blur-md border border-blue-200/50 text-blue-700 px-4 py-3 rounded-2xl flex items-center justify-between shadow-[0_4px_12px_rgba(59,130,246,0.1)]">
+            <span className="text-sm font-medium">{t('login_to_save')}</span>
+            <Link to="/login" className="text-sm font-bold text-blue-600 hover:text-blue-800 bg-white/60 px-3 py-1.5 rounded-lg border border-blue-100 hover:border-blue-300 transition-all">
+              {t('login')}
+            </Link>
+          </div>
+        )}
         <Outlet />
       </main>
 

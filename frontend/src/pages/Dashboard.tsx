@@ -215,8 +215,8 @@ function Dashboard() {
             </h1>
             <p className="text-slate-500 text-lg md:text-xl font-medium max-w-xl leading-relaxed">
               {language === 'vi' 
-                ? `Chào mừng ${user?.username}. Hôm nay là một ngày tuyệt vời để hoàn thành mục tiêu!` 
-                : `Welcome back, ${user?.username}. Today is a great day to accomplish your goals!`}
+                ? `Chào mừng ${user?.username || 'bạn'}. Hôm nay là một ngày tuyệt vời để hoàn thành mục tiêu!` 
+                : `Welcome back, ${user?.username || 'Guest'}. Today is a great day to accomplish your goals!`}
             </p>
           </div>
         </div>
