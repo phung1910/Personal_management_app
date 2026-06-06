@@ -574,6 +574,10 @@ function Schedule() {
 
               {!editingId && (
                 <div className="pt-3 border-t border-gray-100">
+                  <div className="mb-4 text-xs text-blue-600 bg-blue-50/50 p-2.5 rounded-lg border border-blue-100 flex gap-2 leading-relaxed">
+                    <span className="shrink-0">💡</span>
+                    <span>{language === 'vi' ? 'Khi tạo mới, hệ thống sẽ tự động tạo một đầu việc tương ứng bên phần Việc cần làm.' : 'A corresponding task will be automatically added to your To-Do list.'}</span>
+                  </div>
                   <label className="flex items-center gap-2 cursor-pointer mb-3 select-none">
                     <input 
                       type="checkbox" 
