@@ -52,7 +52,8 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
         title,
         objective: `From Schedule (${category || 'Default'})`,
         target_date: new Date(start_time),
-        status: 'todo'
+        status: 'todo',
+        event_id: event.id
       }
     });
 
@@ -74,32 +75,32 @@ router.post('/bulk', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const eventsToCreate = events.map((e: any) => ({
-      user_id: req.user.id,
-      title: e.title,
-      category: e.category || 'Default',
-      start_time: new Date(e.start_time),
-      end_time: new Date(e.end_time),
-      location_or_link: e.location_or_link || null,
-      notes: e.notes || null,
-      color: e.color || null
-    }));
+    await prisma.$transaction(async (tx) => {
+      for (const e of events) {
+        const event = await tx.eventSchedule.create({
+          data: {
+            user_id: req.user.id,
+            title: e.title,
+            category: e.category || 'Default',
+            start_time: new Date(e.start_time),
+            end_time: new Date(e.end_time),
+            location_or_link: e.location_or_link || null,
+            notes: e.notes || null,
+            color: e.color || null
+          }
+        });
 
-    await prisma.eventSchedule.createMany({
-      data: eventsToCreate
-    });
-
-    // Auto-create corresponding tasks in Todo List (StudySession)
-    const sessionsToCreate = events.map((e: any) => ({
-      user_id: req.user.id,
-      title: e.title,
-      objective: `From Schedule (${e.category || 'Default'})`,
-      target_date: new Date(e.start_time),
-      status: 'todo'
-    }));
-
-    await prisma.studySession.createMany({
-      data: sessionsToCreate
+        await tx.studySession.create({
+          data: {
+            user_id: req.user.id,
+            title: e.title,
+            objective: `From Schedule (${e.category || 'Default'})`,
+            target_date: new Date(e.start_time),
+            status: 'todo',
+            event_id: event.id
+          }
+        });
+      }
     });
 
     res.status(201).json({ message: 'Bulk events created successfully' });
@@ -135,6 +136,16 @@ router.put('/:id', async (req: Request, res: Response): Promise<void> => {
         location_or_link: location_or_link !== undefined ? location_or_link : existingEvent.location_or_link,
         notes: notes !== undefined ? notes : existingEvent.notes,
         color: color !== undefined ? color : existingEvent.color
+      }
+    });
+
+    // Update associated study session if exists
+    await prisma.studySession.updateMany({
+      where: { event_id: updatedEvent.id, user_id: req.user.id },
+      data: {
+        title: updatedEvent.title,
+        objective: `From Schedule (${updatedEvent.category || 'Default'})`,
+        target_date: updatedEvent.start_time
       }
     });
 

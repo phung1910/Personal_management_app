@@ -33,7 +33,9 @@ model StudySession {
   progress_percentage Int      @default(0)
   duration_minutes    Int      @default(0)
   target_date         DateTime?
+  event_id            Int?
   user                User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  event               EventSchedule? @relation(fields: [event_id], references: [id], onDelete: Cascade)
 }
 
 model PomodoroLog {
@@ -67,6 +69,7 @@ model EventSchedule {
   notes            String?
   color            String?
   user             User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  study_sessions   StudySession[]
 }
 
 model Transaction {
