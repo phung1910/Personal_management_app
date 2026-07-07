@@ -15,31 +15,47 @@ router.get('/summary', async (req: Request, res: Response): Promise<void> => {
       where: { user_id: req.user.id }
     });
 
-    let totalIncome = 0;
-    let totalExpense = 0;
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    let totalIncomeAllTime = 0;
+    let totalExpenseAllTime = 0;
+
+    let monthlyIncome = 0;
+    let monthlyExpense = 0;
     const expenseBreakdown: Record<string, number> = {};
 
     transactions.forEach(t => {
       const amount = Number(t.amount);
+      const tDate = new Date(t.transaction_date);
+      const isCurrentMonth = tDate.getMonth() === currentMonth && tDate.getFullYear() === currentYear;
+
       if (t.type === 'income') {
-        totalIncome += amount;
+        totalIncomeAllTime += amount;
+        if (isCurrentMonth) {
+          monthlyIncome += amount;
+        }
       } else if (t.type === 'expense') {
-        totalExpense += amount;
+        totalExpenseAllTime += amount;
         
-        // Group by category
-        if (expenseBreakdown[t.category]) {
-          expenseBreakdown[t.category] += amount;
-        } else {
-          expenseBreakdown[t.category] = amount;
+        if (isCurrentMonth) {
+          monthlyExpense += amount;
+          // Group by category for current month
+          if (expenseBreakdown[t.category]) {
+            expenseBreakdown[t.category] += amount;
+          } else {
+            expenseBreakdown[t.category] = amount;
+          }
         }
       }
     });
 
-    const balance = totalIncome - totalExpense;
+    const balance = totalIncomeAllTime - totalExpenseAllTime;
 
     res.json({
-      total_income: totalIncome,
-      total_expense: totalExpense,
+      total_income: monthlyIncome,
+      total_expense: monthlyExpense,
       balance: balance,
       expense_breakdown: expenseBreakdown
     });

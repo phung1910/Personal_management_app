@@ -120,8 +120,14 @@ function Dashboard() {
       setUpcomingEvents(upcoming);
       setTodayTasks(tasks);
 
-      // Finance Summary (all time for widget top)
-      const totalExpense = financeRes.data.filter((t: any) => t.type === 'expense').reduce((acc: number, t: any) => acc + Number(t.amount), 0);
+      // Finance Summary (current month for widget top)
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      const totalExpense = financeRes.data.filter((t: any) => {
+        if (t.type !== 'expense') return false;
+        const d = new Date(t.transaction_date);
+        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+      }).reduce((acc: number, t: any) => acc + Number(t.amount), 0);
       setFinance({ total_expense: totalExpense, total_income: 0, balance: 0 });
 
       // Mini Summary (Today) calculation
